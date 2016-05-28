@@ -1108,8 +1108,12 @@ static int __devinit qpnp_pon_probe(struct spmi_device *spmi)
 	struct resource *pon_resource;
 	struct device_node *itr = NULL;
 	u32 delay = 0, s3_debounce = 0;
-	int rc, sys_reset, index;
-	u8 pon_sts = 0, buf[2];
+	int rc, sys_reset;
+	int index;
+#ifdef KERNEL_PON_REASON_DETECTION
+	u8 pon_sts = 0;
+#endif
+	u8 buf[2];
 	const char *s3_src;
 	u8 s3_src_reg;
 	u16 poff_sts = 0;
@@ -1173,6 +1177,7 @@ static int __devinit qpnp_pon_probe(struct spmi_device *spmi)
 			"PMIC@SID%d Power-on reason: %s and '%s' boot\n",
 			pon->spmi->sid, qpnp_pon_reason[index],
 			cold_boot ? "cold" : "warm");
+#endif
 
 	/* POFF reason */
 	rc = spmi_ext_register_readl(pon->spmi->ctrl, pon->spmi->sid,
@@ -1183,7 +1188,7 @@ static int __devinit qpnp_pon_probe(struct spmi_device *spmi)
 		return rc;
 	}
 	poff_sts = buf[0] | (buf[1] << 8);
-	index = ffs(poff_sts) - 1;
+	index = ffs(posff_sts) - 1;
 	if (index >= ARRAY_SIZE(qpnp_poff_reason) || index < 0)
 		dev_info(&pon->spmi->dev,
 				"PMIC@SID%d: Unknown power-off reason\n",
