@@ -1551,7 +1551,7 @@ static __ref int do_freq_mitigation(void *data)
 			;
 		INIT_COMPLETION(freq_mitigation_complete);
 
-		for_each_possible_cpu(cpu) {
+		for_each_online_cpu(cpu) {
 			max_freq_req = (cpus[cpu].max_freq) ?
 					msm_thermal_info.freq_limit :
 					UINT_MAX;
