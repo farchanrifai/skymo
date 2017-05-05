@@ -206,4 +206,3 @@ const char *smd_rpc_get_sym(uint32_t val)
 	return 0;
 }
 EXPORT_SYMBOL(smd_rpc_get_sym);
-

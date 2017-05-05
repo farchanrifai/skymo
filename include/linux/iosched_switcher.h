@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, The Linux Foundation. All rights reserved.
+ * Copyright (C) 2017, Sultanxda <sultanxda@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -11,10 +11,16 @@
  * GNU General Public License for more details.
  */
 
-#include <linux/notifier.h>
+#ifndef _IOSCHED_SWITCHER_H
+#define _IOSCHED_SWITCHER_H
 
-int show_mem_notifier_register(struct notifier_block *nb);
+#ifdef CONFIG_IOSCHED_SWITCHER
+int init_iosched_switcher(struct request_queue *q);
+#else
+static inline int init_iosched_switcher(struct request_queue *q)
+{
+	return 0;
+}
+#endif
 
-int show_mem_notifier_unregister(struct notifier_block *nb);
-
-void show_mem_call_notifiers(void);
+#endif /* _IOSCHED_SWITCHER_H */

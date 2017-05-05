@@ -15,6 +15,7 @@
  #
  # Please maintain this if you use this script or any part of it
  #
+ # Modified by @farchanrifai for Skymo Kernel
 
 ###########################################################################
 # Bash Color
@@ -34,42 +35,62 @@ clear
 # Resources
 THREAD="-j12"
 KERNEL="zImage"
+OPT="CONFIG_NO_ERROR_ON_MISMATCH=y"
 DTBIMAGE="dt.img"
-DEFCONFIG="cancro_user_defconfig"
 device="cancro"
-COMPILER="/home/monish/kernel/Tools/arm-eabi-6.0/bin"
-
-###########################################################################
-# Kernel Details
-BASE_ASSASIN_VER="assasin"
-VER="v3"
-ASSASIN_VER="$BASE_ASSASIN_VER$VER"
-
-###########################################################################
-# Vars
-export CROSS_COMPILE="$COMPILER/arm-eabi-"
-export ARCH=arm
-export SUBARCH=arm
-export KBUILD_BUILD_USER="monish"
-export KBUILD_BUILD_HOST="beast"
+COMPILER="/home/farchan/ubertc-5.3/bin"
 
 ###########################################################################
 # Directory naming
 echo -e "${bldblu}"
-while read -p "Which branch (cm/miui)? " mchoice
+#echo "Select Skymo version"
+#echo "1. CM DTTW & S2W"
+#echo "2. CM NO DTTW & S2W"
+#echo "2. MIUI DTTW & S2W"
+#echo "2. MIUI NO DTTW & S2W"
+while read -p "Select Skymo version
+1. CM DTTW & S2W
+2. CM NO DTTW & S2W
+3. MIUI DTTW & S2W
+3. MIUI NO DTTW & S2W
+Your choice: " mchoice
 echo -e "${bldred}"
 do
 case "$mchoice" in
-	cm|CM )
-		ASSASIN_F="cm"
+	1|1 )
+		SKYMO_F="+"
+		DEFCONFIG="lineageos_cancro_defconfig"
+		VER="+"
+		DIR="dttw"
 		echo
-		echo "Named cm"
+		echo "DTTW -- S2W"
 		break
 		;;
-	m|M )
-		ASSASIN_F="miui"
+	2|2 )
+		SKYMO_F=""
+		DEFCONFIG="lineageos_cancro_defconfig"
+		VER=""
+		DIR="polos"
 		echo
-		echo "Named miui"
+		echo "POLOS -- NO DTTW"
+		break
+		;;
+	3|3 )
+		SKYMO_F="+_miui"
+		DEFCONFIG="lineageos_cancro_defconfig"
+		VER=""
+		DIR="miui"
+		echo
+		echo "MIUI -- DTTW"
+		break
+		;;
+    3|3 )
+		SKYMO_F="_miui"
+		DEFCONFIG="lineageos_cancro_defconfig"
+		VER=""
+		DIR="miui"
+		echo
+		echo "MIUI -- NO DTTW"
 		break
 		;;
 	* )
@@ -79,44 +100,79 @@ case "$mchoice" in
 		;;
 esac
 done
+###########################################################################
+# Kernel Details
+NAME="Skymo"
+VERSION=""
+DEVICE="_cancro"
+SKYMO="$NAME$VER$VERSION$DEVICE"
+TGL=$(date +"%d-%m-%y")
+###########################################################################
+# Vars
+export CROSS_COMPILE="$COMPILER/arm-eabi-"
+export ARCH=arm
+export SUBARCH=arm
+export KBUILD_BUILD_USER="Farchan"
+export KBUILD_BUILD_HOST="WTF!!"
+
 
 ###########################################################################
 # Paths
 #STRIP=/toolchain-path/arm-eabi-strip
-STRIP=$COMPILER/arm-eabi-strip
+STRIP=$COMPILER/bin/arm-eabi-strip
 KERNEL_DIR=`pwd`
-REPACK_DIR="$KERNEL_DIR/zip/$ASSASIN_F/kernel_zip"
-DTBTOOL_DIR="$KERNEL_DIR/zip"
+REPACK_DIR="$KERNEL_DIR/zip/$SKYMO_F/kernel_zip"
+DTBTOOL_DIR="$KERNEL_DIR"
 ZIMAGE_DIR="$KERNEL_DIR/arch/arm/boot"
 
 ###########################################################################
 # Functions
 
 function make_dtb {
-		$DTBTOOL_DIR/dtbToolCM -2 -o $REPACK_DIR/$DTBIMAGE -s 2048 -p scripts/dtc/ arch/arm/boot/
+		$DTBTOOL_DIR/dtbToolCM -s 2048 -d "qcom,msm-id = <" -2 -o $REPACK_DIR/$DTBIMAGE -p /usr/bin/ arch/arm/boot/
 
 }
 function clean_all {
 		make clean && make mrproper
 }
 
+function alamat {
+		cd ~/android/Builds
+		mkdir -p $DIR/$TGL
+		cd $DIR	
+		COUNT=`ls ~/android/Builds/$DIR/$TGL -l | wc -l`
+		NUMBER=$(($COUNT +1))
+		NUMB="#$NUMBER"
+}
+
+
+function count {
+		cd ~android/Builds
+		COUNT=`ls ~/android/Builds -l | wc -l`
+		NUMBER=$(($COUNT +1))
+		NUMB="#$NUMBER"
+}
+
 function make_kernel {
 		echo
 		make $DEFCONFIG
-		make $THREAD
-		cp -vr $ZIMAGE_DIR/$KERNEL $REPACK_DIR/zImage
+		make $THREAD $OPT 2>&1 | tee build.log
 }
 
-function make_zip {
-		cd $REPACK_DIR
-		zip -r ~/kernel/builds/ASSASIN-$ASSASIN_F-$(date +%d-%m_%H%M).zip *
-}
-
-function copy_modules {
-		echo "Copying modules"
-		find . -name '*.ko' -exec cp {} $REPACK_DIR/modules/ \;
-		echo "Stripping modules for size"
-		$STRIP --strip-unneeded $REPACK_DIR/modules/*.ko
+function skymo {
+		echo "Make dtb & zip"
+		for i in `find -name *.ko`; do cp $i ~/android/AnyKernel2/modules/; done
+		$STRIP --strip-unneeded ~/android/AnyKernel2/modules/*.ko
+		$DTBTOOL_DIR/dtbToolCM -s 2048 -d "qcom,msm-id = <" -2 -o arch/arm/boot/dt.img -p /usr/bin/ arch/arm/boot/
+		cp arch/arm/boot/zImage ~/android/AnyKernel2/
+		cp arch/arm/boot/dt.img ~/android/AnyKernel2/
+		cd ~/android/AnyKernel2/modules
+		rm *.ko
+		cd ~/android/AnyKernel2
+		DATE=$(date +"%d%m%y")
+		rm *.zip
+		zip -r9 $SKYMO-$DATE-$NUMB.zip * -x README $SKYMO-$DATE-$NUMB.zip
+		cp *.zip ~/android/Builds/$DIR/$TGL
 }
 
 ###########################################################################
@@ -126,9 +182,9 @@ DATE_START=$(date +"%s")
 echo -e "${bldred}"; echo -e "${blink_red}"; echo "$AK_VER"; echo -e "${restore}";
 
 echo -e "${bldgrn}"
-echo "-----------------"
-echo "Making ASSASIN Kernel:"
-echo "-----------------"
+echo "----------------"
+echo "Making SKYMO Kernel:"
+echo "----------------"
 echo -e "${restore}"
 
 echo -e "${bldgrn}"
@@ -160,13 +216,13 @@ do
 case "$dchoice" in
 	y|Y)
 		make_kernel
+		alamat
+		cd $KERNEL_DIR
 		if [ -e "arch/arm/boot/zImage" ]; then
-		make_dtb		
-		copy_modules
-		make_zip
+		skymo
 		else
 		echo -e "${bldred}"
-		echo "Kernel Compilation failed, zImage not found"
+		echo "Kernel Compilation failed, run gedit build.log!!"
 		echo -e "${restore}"
 		exit 1
 		fi
@@ -183,13 +239,13 @@ case "$dchoice" in
 esac
 done
 echo -e "${bldgrn}"
-echo "ASSASIN-$ASSASIN_F-$(date +%d-%m_%H%M).zip"
+echo "$SKYMO-$DATE-$NUMB.zip"
 echo -e "${bldred}"
-echo "################################################################################"
+echo "###############################################################################"
 echo -e "${bldgrn}"
-echo "------------------------Assasin Kernel Compiled in:-----------------------------"
+echo "-------------------------Skymo Kernel Compiled in:-----------------------------"
 echo -e "${bldred}"
-echo "################################################################################"
+echo "###############################################################################"
 echo -e "${restore}"
 
 DATE_END=$(date +"%s")

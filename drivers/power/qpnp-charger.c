@@ -2004,9 +2004,9 @@ qpnp_chg_chgr_chg_fastchg_irq_handler(int irq, void *_chip)
 {
 	struct qpnp_chg_chip *chip = _chip;
 	struct timespec ts;
-	bool fastchg_on = false;
+	bool fastchg_on = true;
 
-	fastchg_on = qpnp_chg_is_fastchg_on(chip);
+	//fastchg_on = qpnp_chg_is_fastchg_on(chip);
 
 	pr_info("FAST_CHG IRQ triggered, fastchg_on: %d\n", fastchg_on);
 

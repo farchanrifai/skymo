@@ -67,6 +67,7 @@ include/linux/version.h
 include/generated
 arch/*/include/generated
 arch/arm/boot/dt.img
+build.log
 
 # stgit generated dirs
 patches-*

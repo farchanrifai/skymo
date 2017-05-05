@@ -441,7 +441,7 @@
 
 #define STANDBY_WAKE_DELAY	1
 
-#define REAL_TIME_PLAYBACK_CALIBRATION_STRENGTH 0x7F /* 100% of rated voltage (closed loop) */
+#define REAL_TIME_PLAYBACK_CALIBRATION_STRENGTH 0x4F /* 100% of rated voltage (closed loop) */
 
 #define MAX_REVISION_STRING_SIZE 10
 
