@@ -52,7 +52,7 @@ while read -p "Select Skymo version
 1. CM DTTW & S2W
 2. CM NO DTTW & S2W
 3. MIUI DTTW & S2W
-3. MIUI NO DTTW & S2W
+4. MIUI NO DTTW & S2W
 Your choice: " mchoice
 echo -e "${bldred}"
 do
@@ -78,16 +78,16 @@ case "$mchoice" in
 	3|3 )
 		SKYMO_F="+_miui"
 		DEFCONFIG="lineageos_cancro_defconfig"
-		VER=""
+		VER="+_miui"
 		DIR="miui"
 		echo
 		echo "MIUI -- DTTW"
 		break
 		;;
-    3|3 )
+    4|4 )
 		SKYMO_F="_miui"
 		DEFCONFIG="lineageos_cancro_defconfig"
-		VER=""
+		VER="_miui"
 		DIR="miui"
 		echo
 		echo "MIUI -- NO DTTW"
@@ -119,7 +119,7 @@ export KBUILD_BUILD_HOST="WTF!!"
 ###########################################################################
 # Paths
 #STRIP=/toolchain-path/arm-eabi-strip
-STRIP=$COMPILER/bin/arm-eabi-strip
+STRIP=$COMPILER/arm-eabi-strip
 KERNEL_DIR=`pwd`
 REPACK_DIR="$KERNEL_DIR/zip/$SKYMO_F/kernel_zip"
 DTBTOOL_DIR="$KERNEL_DIR"
@@ -161,13 +161,14 @@ function make_kernel {
 
 function skymo {
 		echo "Make dtb & zip"
+		cd ~/android/AnyKernel2/modules
+		rm *.ko
+		cd $KERNEL_DIR
 		for i in `find -name *.ko`; do cp $i ~/android/AnyKernel2/modules/; done
 		$STRIP --strip-unneeded ~/android/AnyKernel2/modules/*.ko
 		$DTBTOOL_DIR/dtbToolCM -s 2048 -d "qcom,msm-id = <" -2 -o arch/arm/boot/dt.img -p /usr/bin/ arch/arm/boot/
 		cp arch/arm/boot/zImage ~/android/AnyKernel2/
 		cp arch/arm/boot/dt.img ~/android/AnyKernel2/
-		cd ~/android/AnyKernel2/modules
-		rm *.ko
 		cd ~/android/AnyKernel2
 		DATE=$(date +"%d%m%y")
 		rm *.zip
