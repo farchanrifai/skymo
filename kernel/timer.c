@@ -1002,9 +1002,6 @@ int try_to_del_timer_sync(struct timer_list *timer)
 
 	base = lock_timer_base(timer, &flags);
 
-	if (base->running_timer == timer)
-		goto out;
-
 	ret = 0;
 	if (timer_pending(timer)) {
 		detach_timer(timer, 1);
