@@ -4471,11 +4471,10 @@ static inline void update_sd_lb_stats(struct sched_domain *sd, int this_cpu,
 		sg = sg->next;
 	} while (sg != sd->groups);
 
-	if (!env->sd->parent) {
-		/* update overload indicator if we are at root domain */
+	/*if (!env->sd->parent) {
+		/* update overload indicator if we are at root domain /
 		if (env->dst_rq->rd->overload != overload)
-			env->dst_rq->rd->overload = overload;
-	}
+			env->dst_rq->rd->overload = overload;*/
 }
 
 /**
